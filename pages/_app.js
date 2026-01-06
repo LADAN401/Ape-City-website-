@@ -1,22 +1,27 @@
+'use client';
+
 import '../styles/globals.css';
-import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
+import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { base } from 'wagmi/chains';
 
 const config = getDefaultConfig({
   appName: 'Ape City Launchpad',
-  projectId: 'a6ab4cf5e4661087637efd46546bb172', // Your provided WalletConnect Project ID
+  projectId: 'a6ab4cf5e4661087637efd46546bb172', // Your WalletConnect ID
   chains: [base],
 });
 
-function MyApp({ Component, pageProps }) {
+const queryClient = new QueryClient();
+
+export default function App({ Component, pageProps }) {
   return (
     <WagmiProvider config={config}>
-      <RainbowKitProvider>
-        <Component {...pageProps} />
-      </RainbowKitProvider>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
+          <Component {...pageProps} />
+        </RainbowKitProvider>
+      </QueryClientProvider>
     </WagmiProvider>
   );
-}
-
-export default MyApp;
+} 
