@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { getContract } from '../lib/contract';
@@ -16,20 +18,24 @@ export default function Home() {
   const fetchTokens = async () => {
     const provider = new ethers.JsonRpcProvider('https://mainnet.base.org');
     const contract = getContract(provider);
-    const count = await contract.getLaunchedTokensCount();
-    const list = [];
-    for (let i = 0; i < count; i++) {
-      const t = await contract.launchedTokens(i);
-      list.push({
-        index: i,
-        token: t.token,
-        creator: t.creator,
-        totalSupply: ethers.formatEther(t.totalSupply),
-        ethRaised: ethers.formatEther(t.ethRaised),
-        migrated: t.migrated,
-      });
+    try {
+      const count = await contract.getLaunchedTokensCount();
+      const list = [];
+      for (let i = 0; i < count; i++) {
+        const t = await contract.launchedTokens(i);
+        list.push({
+          index: i,
+          token: t.token,
+          creator: t.creator,
+          totalSupply: ethers.formatEther(t.totalSupply),
+          ethRaised: ethers.formatEther(t.ethRaised),
+          migrated: t.migrated,
+        });
+      }
+      setTokens(list);
+    } catch (e) {
+      console.error(e);
     }
-    setTokens(list);
   };
 
   useEffect(() => {
@@ -66,13 +72,11 @@ export default function Home() {
     <div className="container">
       <h1>Ape City Launchpad</h1>
       {isConnected ? (
-        <>
-          <p>Connected: {address}</p>
-          <button onClick={disconnect}>Disconnect</button>
-        </>
+        <p>Connected: {address}</p>
       ) : (
         <button onClick={() => connect({ connector: connectors[0] })}>Connect Wallet</button>
       )}
+      <button onClick={disconnect} disabled={!isConnected}>Disconnect</button>
 
       <h2>Launch Token</h2>
       <input placeholder="Name (optional)" value={name} onChange={e => setName(e.target.value)} />
@@ -85,10 +89,13 @@ export default function Home() {
       <ul>
         {tokens.map(t => (
           <li key={t.index}>
-            <strong>{t.token}</strong> | Raised: {t.ethRaised} ETH | {t.migrated ? 'Migrated to Uniswap' : 'Bonding Curve Active'}
+            <strong>Token CA: {t.token}</strong><br/>
+            Creator: {t.creator}<br/>
+            Raised: {t.ethRaised} ETH<br/>
+            Status: {t.migrated ? 'Migrated to Uniswap' : 'Bonding Curve Active'}
           </li>
         ))}
       </ul>
     </div>
   );
-}
+        } 
